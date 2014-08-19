@@ -1,21 +1,24 @@
+library(data.table)
+
 dfile <- "repdata_data_StormData.csv"
-dfraw <- read.csv(dfile)
+
+DT <- read.table(dfile, header=TRUE, sep=",")
 
 # Exploratory analysis
-names(dfraw)
-sort(table(dfraw$PROPDMGEXP), decreasing=TRUE)
-sort(table(dfraw$CROPDMGEXP), decreasing=TRUE)
+names(DT)
+sort(table(DT$PROPDMGEXP), decreasing=TRUE)
+sort(table(DT$CROPDMGEXP), decreasing=TRUE)
 
 # initialize three new variables to sum up $$ damage
-dfraw$CROPS <- as.numeric(NA)
-dfraw$PROP <- as.numeric(NA)
-dfraw$TOTDMG <- as.numeric(NA)
+DT$CROPS <- as.numeric(NA)
+DT$PROP <- as.numeric(NA)
+DT$TOTDMG <- as.numeric(NA)
 
 
-nr <- nrow(dfraw)
+nr <- nrow(DT)
 for (i in 1:50){
-  e1 <- dfraw$PROPDMGEXP[i]
-  e2 <- dfraw$CROPDMGEXP[i]
+  e1 <- DT$PROPDMGEXP[i]
+  e2 <- DT$CROPDMGEXP[i]
   if(e1=="" | e1=="0"){
     m1 <- 1e0
   }else{
@@ -62,11 +65,11 @@ for (i in 1:50){
   }
                   
 
-  if(!is.null(dfraw$CRPDMG[i])){
-    dfraw$CROPS[i] <- m2*dfraw$CRPDMG[i]
+  if(!is.null(DT$CRPDMG[i])){
+    DT$CROPS[i] <- m2*DT$CRPDMG[i]
   } 
-  if(!is.null(dfraw$PROPDMG[i])){
-    dfraw$PROP[i] <- m1*dfraw$PROPDMG[i]
+  if(!is.null(DT$PROPDMG[i])){
+    DT$PROP[i] <- m1*DT$PROPDMG[i]
   } 
-  dfraw$TOTDMG[i] <- sum(dfraw$CROPS[i], dfraw$PROP[i], na.rm=TRUE)
+  DT$TOTDMG[i] <- sum(DT$CROPS[i], DT$PROP[i], na.rm=TRUE)
 }
