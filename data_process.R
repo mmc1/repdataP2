@@ -125,13 +125,46 @@ DT$TOTDMG <- DT$CROPS + DT$PROP
 sum(DT$TOTDMG, na.rm=TRUE)/1e9
 DT[which(DT$PROPDMGEXP=="B"),]
 
-# melt the data table by year and event type
-mDT <- melt(DT, id=c("year", "EVTYPE"), measure=c("FATALITIES", "INJURIES", "CROPS", "PROP", "TOTDMG"))
+# # melt the data table by year and event type
+# mDT <- melt(DT, id=c("year", "EVTYPE"), measure=c("FATALITIES", "INJURIES", "CROPS", "PROP", "TOTDMG"))
+# 
+# mDTtotdmg <- melt(DT, id=c("year", "EVTYPE"), measure="TOTDMG")
+# dcast.data.table(mDTtotdmg, variable ~ year, fun=sum)
+# dcast.data.table(mDTtotdmg, variable ~ year + EVTYPE, fun=sum)
+# dcast.data.table(mDTtotdmg, variable ~ EVTYPE, fun=sum), decreasing=TRUE
+# dcast.data.table(mDT, TOTDMG ~ year + EVTYPE, fun=sum)
 
-mDTtotdmg <- melt(DT, id=c("year", "EVTYPE"), measure="TOTDMG")
-dcast.data.table(mDTtotdmg, variable ~ year, fun=sum)
-dcast.data.table(mDTtotdmg, variable ~ year + EVTYPE, fun=sum)
-sort(dcast.data.table(mDTtotdmg, variable ~ EVTYPE, fun=sum)/1e6, decreasing=TRUE)
+#Summary of total damage (Crops & Property, in Billion $$) by event type
+TDMGbyType <- aggregate(TOTDMG ~ EVTYPE, DT, sum)
+TDMGbyType <- TDMGbyType[order(TDMGbyType$TOTDMG, decreasing=TRUE),]
+row.names(TDMGbyType) <- NULL
+TDMGbyType$TOTDMG <- round(TDMGbyType$TOTDMG/1e9, 2)
+head(TDMGbyType, 10)
 
+nlist <- as.character(TDMGbyType$EVTYPE[1:20])
+nlist <- c(nlist, "ALL OTHER EVENT TYPES")
+yvals <- c(TDMGbyType$TOTDMG[1:20], sum(TDMGbyType$TOTDMG[21:nrow(TDMGbyType)]))
+barplot(yvals, names.arg=nlist, horiz=TRUE, las=1)
 
-dcast.data.table(mDT, TOTDMG ~ year + EVTYPE, fun=sum)
+#Summary of property damage (in Billion $$) by event type
+PDMGbyType <- aggregate(PROP ~ EVTYPE, DT, sum)
+PDMGbyType <- PDMGbyType[order(PDMGbyType$PROP, decreasing=TRUE),]
+row.names(PDMGbyType) <- NULL
+PDMGbyType$PROP <- round(PDMGbyType$PROP/1e9, 2)
+head(PDMGbyType, 10)
+
+#Summary of crop damage (in Billion $$) by event type
+CTDMGbyType <- aggregate(CROPS ~ EVTYPE, DT, sum)
+CTDMGbyType <- CTDMGbyType[order(CTDMGbyType$CROPS, decreasing=TRUE),]
+row.names(CTDMGbyType) <- NULL
+CTDMGbyType$CROPS <- round(CTDMGbyType$CROPS/1e9, 2)
+head(CTDMGbyType, 10)
+
+#Summary of total damage by year, all events
+YearlyDMG <- aggregate(TOTDMG ~ year, DT, sum)
+YearlyDMG <- YearlyDMG[order(YearlyDMG$TOTDMG, decreasing=TRUE),]
+row.names(YearlyDMG) <- NULL
+YearlyDMG$year  <- as.Date(YearlyDMG$year, format="%Y")
+YearlyDMG$TOTDMG <- YearlyDMG$TOTDMG/1e9
+
+plot(YearlyDMG$year, YearlyDMG$TOTDMG)
