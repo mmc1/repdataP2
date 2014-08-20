@@ -17,64 +17,6 @@ DT$CROPS <- as.numeric(NA)
 DT$PROP <- as.numeric(NA)
 DT$TOTDMG <- as.numeric(NA)
 
-nr <- nrow(DT)
-# for (i in 1:nr){
-#   e1 <- DT$PROPDMGEXP[i]
-#   e2 <- DT$CROPDMGEXP[i]
-#   if(e1=="" | e1=="0"){
-#     m1 <- 1e0
-#   }else{
-#    if(e1=="K" | e1=="3"){
-#      m1 <- 1e3
-#     }else{
-#       if(e1=="m" | e1=="6" | e1=="M"){
-#         m1 <- 1e6
-#       }else{
-#         if(e1=="B"){
-#           m1 <- 1e9
-#         }else{
-#           m1 <- (e1=="1")*1e1 +
-#             (e1=="h" | e1=="2" | e1=="H")*1e2 +
-#             (e1=="4")*1e4 +
-#             (e1=="5")*1e5 +
-#             (e1=="7")*1e7 +
-#             (e1=="8")*1e8
-#         }
-#       }
-#     }
-#   }
-#   if(e2=="" | e2=="0"){
-#     m2 <- 1e0
-#   }else{
-#     if(e2=="K" | e2=="3"){
-#       m2 <- 1e3
-#     }else{
-#       if(e2=="m" | e2=="6" | e2=="M"){
-#         m2 <- 1e6
-#       }else{
-#         if(e2=="B"){
-#           m2 <- 1e9
-#         }else{
-#           m2 <- (e2=="1")*1e2 +
-#             (e2=="h" | e2=="2" | e2=="H")*1e2 +
-#             (e2=="4")*1e4 +
-#             (e2=="5")*1e5 +
-#             (e2=="7")*1e7 +
-#             (e2=="8")*1e8
-#         }
-#       }
-#     }
-#   }
-#   if(!is.null(DT$CRPDMG[i])){
-#     DT$CROPS[i] <- m2*DT$CRPDMG[i]
-#   } 
-#   if(!is.null(DT$PROPDMG[i])){
-#     DT$PROP[i] <- m1*DT$PROPDMG[i]
-#   } 
-#   DT$TOTDMG[i] <- sum(DT$CROPS[i], DT$PROP[i], na.rm=TRUE)
-# }
-
-
 # Convert property damage to absolute value, not the abbreviated value with the exponential symbol
 irows <- which(DT$PROPDMGEXP=="" | DT$PROPDMGEXP=="0")
 DT$PROP[irows] <- DT$PROPDMG[irows]*1e0
@@ -168,3 +110,52 @@ YearlyDMG$year  <- as.Date(YearlyDMG$year, format="%Y")
 YearlyDMG$TOTDMG <- YearlyDMG$TOTDMG/1e9
 
 plot(YearlyDMG$year, YearlyDMG$TOTDMG)
+
+
+#Summary of effect on population health (deaths and injuries)
+#Fatalities
+EventFatalities <- aggregate(FATALITIES ~ EVTYPE, DT, sum)
+EventFatalities <- EventFatalities[order(EventFatalities$FATALITIES, decreasing=TRUE),]
+row.names(EventFatalities) <- NULL
+head(EventFatalities, 10)
+
+nlist <- as.character(EventFatalities$EVTYPE[1:20])
+nlist <- c(nlist, "ALL OTHER EVENT TYPES")
+yvals <- c(EventFatalities$FATALITIES[1:20], sum(EventFatalities$FATALITIES[21:nrow(EventFatalities)]))
+barplot(yvals, names.arg=nlist, horiz=TRUE, las=1)
+
+YearlyFatalities <- aggregate(FATALITIES ~ year, DT, sum)
+YearlyFatalities <- YearlyFatalities[order(YearlyFatalities$FATALITIES, decreasing=TRUE),]
+row.names(YearlyFatalities) <- NULL
+YearlyFatalities$year  <- as.Date(YearlyFatalities$year, format="%Y")
+plot(YearlyFatalities$year, YearlyFatalities$FATALITIES)
+
+#Injuries
+EventInjuries <- aggregate(INJURIES ~ EVTYPE, DT, sum)
+EventInjuries <- EventInjuries[order(EventInjuries$INJURIES, decreasing=TRUE),]
+row.names(EventInjuries) <- NULL
+head(EventInjuries, 10)
+
+nlist <- as.character(EventInjuries$EVTYPE[1:20])
+nlist <- c(nlist, "ALL OTHER EVENT TYPES")
+yvals <- c(EventInjuries$INJURIES[1:20], sum(EventInjuries$INJURIES[21:nrow(EventInjuries)]))
+barplot(yvals, names.arg=nlist, horiz=TRUE, las=1)
+
+YearlyInjuries <- aggregate(INJURIES ~ year, DT, sum)
+YearlyInjuries <- YearlyInjuries[order(YearlyInjuries$INJURIES, decreasing=TRUE),]
+row.names(YearlyInjuries) <- NULL
+YearlyInjuries$year  <- as.Date(YearlyInjuries$year, format="%Y")
+head(YearlyInjuries, 10)
+plot(YearlyInjuries$year, YearlyInjuries$INJURIES)
+
+#Sum injuries + fatalites for events
+DT$TOTFI <- DT$FATALITIES + DT$INJURIES
+EventTot <- aggregate(TOTFI ~ EVTYPE, DT, sum)
+EventTot <- EventTot[order(EventTot$TOTFI, decreasing=TRUE),]
+row.names(EventTot) <- NULL
+head(EventTot, 10)
+
+nlist <- as.character(EventTot$EVTYPE[1:20])
+nlist <- c(nlist, "ALL OTHER EVENT TYPES")
+yvals <- c(EventTot$TOTFI[1:20], sum(EventTot$TOTFI[21:nrow(EventTot)]))
+barplot(yvals, names.arg=nlist, horiz=TRUE, las=1)
