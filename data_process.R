@@ -1,7 +1,7 @@
 require(reshape2)
 require(data.table)
 
-dfile <- "repdata_data_StormData.csv"
+dfile <- "repdata-data-StormData.csv"
 
 DT <- read.table(dfile, header=TRUE, sep=",")
 
