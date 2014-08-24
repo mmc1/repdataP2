@@ -86,7 +86,11 @@ head(TDMGbyType, 10)
 nlist <- as.character(TDMGbyType$EVTYPE[1:20])
 nlist <- c(nlist, "ALL OTHER EVENT TYPES")
 yvals <- c(TDMGbyType$TOTDMG[1:20], sum(TDMGbyType$TOTDMG[21:nrow(TDMGbyType)]))
-barplot(yvals, names.arg=nlist, horiz=TRUE, las=1)
+
+par(mar=c(5, 15, 3, 1)+0.1)
+barplot(yvals, names.arg=nlist, horiz=TRUE, las=1, xlab="$Billion", 
+        main="Total Crops and Property Damage by Weather Event Type, 1950-2011",
+        cex.main=0.8)
 
 #Summary of property damage (in Billion $$) by event type
 PDMGbyType <- aggregate(PROP ~ EVTYPE, DT, sum)
@@ -109,7 +113,7 @@ row.names(YearlyDMG) <- NULL
 YearlyDMG$year  <- as.Date(YearlyDMG$year, format="%Y")
 YearlyDMG$TOTDMG <- YearlyDMG$TOTDMG/1e9
 
-plot(YearlyDMG$year, YearlyDMG$TOTDMG)
+plot(YearlyDMG$year, YearlyDMG$TOTDMG, ylab="Total Yearly Damage, $Billion", xlab="Year", pch=16)
 
 
 #Summary of effect on population health (deaths and injuries)
